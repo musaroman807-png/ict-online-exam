@@ -12,7 +12,8 @@ from flask import (
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "change-this-secret-key")
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "change-this-password")
-DB = "exam.db"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB = os.path.join(BASE_DIR, "exam.db")
 
 
 def database():
