@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Location Permission</title>
+</head>
+<body>
+    <h2>লোকেশন অনুমতি</h2>
+    <p>পরীক্ষা শুরু করতে তোমার বর্তমান লোকেশন প্রয়োজন। এটি অ্যাডমিন দেখতে পারবেন।</p>
+
+    <button onclick="getLocation()">Allow Location & Continue</button>
+    <p id="status"></p>
+
+    <script>
+    function getLocation() {
+        const status = document.getElementById("status");
+
+        if (!navigator.geolocation) {
+            status.textContent = "তোমার ব্রাউজার লোকেশন সমর্থন করে না।";
+            return;
+        }
+
+        status.textContent = "লোকেশন নেওয়া হচ্ছে...";
+
+        navigator.geolocation.getCurrentPosition(async function(position) {
+            try {
+                const response = await fetch("/save-location", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.ok) {
+                    window.location.href = data.redirect;
+                } else {
+                    status.textContent = data.error || "লোকেশন সংরক্ষণ হয়নি।";
+                }
+            } catch (error) {
+                status.textContent = "সার্ভারের সঙ্গে যোগাযোগ করা যায়নি।";
+            }
+        }, function(error) {
+            status.textContent = "লোকেশন পাওয়া যায়নি। অনুমতি দিয়ে আবার চেষ্টা করো।";
+        });
+    }
+    </script>
+</body>
+</html>

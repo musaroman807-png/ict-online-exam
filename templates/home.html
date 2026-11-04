@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ICT Online Examination</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<div class="container">
+    <div class="card">
+        <h1>Best of Luck!</h1>
+        <h2>ICT Online Examination</h2>
+
+        <p>পরীক্ষা শুরু করার আগে নিজের নাম লিখো।</p>
+
+        <form action="/begin" method="POST">
+            <input
+                type="text"
+                name="name"
+                placeholder="তোমার সম্পূর্ণ নাম"
+                maxlength="80"
+                required
+            >
+
+            <div class="consent">
+                <p>
+                    পরীক্ষায় অংশ নিতে তোমার বর্তমান অবস্থানের
+                    Location সংগ্রহ করে Admin-এর কাছে দেখানো হবে।
+                    Location না দিলে পরীক্ষা শুরু করা যাবে না।
+                </p>
+
+                <label>
+                    <input
+                        type="checkbox"
+                        name="location_consent"
+                        value="yes"
+                        required
+                    >
+                    আমি Location শেয়ার করতে সম্মত।
+                </label>
+            </div>
+
+            <button type="submit">START EXAM</button>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ICT Online Exam</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header class="exam-header">
+    <h1>KNOWLEDGE CLUB</h1>
+    <h2>ICT ONLINE EXAMINATION</h2>
+    <p>Test Your Knowledge • Build Your Future</p>
+    <hr>
+    <p><strong>Total Questions:</strong> 40 |
+       <strong>Time:</strong> 30 Minutes</p>
+</header>
+
+<header class="exam-header">
+    <h2>ICT Online Examination</h2>
+    <div id="timer">সময়: 30:00</div>
+</header>
+
+<form id="examForm">
+    <div id="questionContainer"></div>
+
+    <div class="card">
+        <button type="submit">SUBMIT EXAM</button>
+    </div>
+</form>
+
+<script>
+const questions = {{ questions|tojson }};
+const container = document.getElementById("questionContainer");
+
+questions.forEach((q, index) => {
+    const card = document.createElement("div");
+    card.className = "card";
+
+    const heading = document.createElement("h3");
+    heading.textContent = (index + 1) + ". " + q.question;
+    card.appendChild(heading);
+
+    q.options.forEach((option, optionIndex) => {
+        const label = document.createElement("label");
+        label.className = "option";
+
+        const radio = document.createElement("input");
+        radio.type = "radio";
+        radio.name = String(index);
+        radio.value = String(optionIndex);
+
+        const text = document.createTextNode(" " + option);
+
+        label.appendChild(radio);
+        label.appendChild(text);
+        card.appendChild(label);
+    });
+
+    container.appendChild(card);
+});
+
+let remaining = 30 * 60;
+let submitted = false;
+
+function updateTimer() {
+    const minutes = Math.floor(remaining / 60);
+    const seconds = remaining % 60;
+
+    document.getElementById("timer").textContent =
+        "সময়: " + minutes + ":" + String(seconds).padStart(2, "0");
+
+    if (remaining <= 0) {
+        submitExam(true);
+        return;
+    }
+
+    remaining--;
+}
+
+const timerInterval = setInterval(updateTimer, 1000);
+updateTimer();
+
+async function submitExam(autoSubmit = false) {
+    if (submitted) return;
+
+    if (!autoSubmit && !confirm("তুমি কি পরীক্ষা জমা দিতে চাও?")) {
+        return;
+    }
+
+    submitted = true;
+    clearInterval(timerInterval);
+
+    const answers = {};
+
+    questions.forEach((q, index) => {
+        const selected = document.querySelector(
+            'input[name="' + index + '"]:checked'
+        );
+
+        if (selected) {
+            answers[String(index)] = Number(selected.value);
+        }
+    });
+
+    try {
+        const response = await fetch("/submit", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({answers: answers})
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.error || "জমা দেওয়া যায়নি।");
+        }
+
+        document.body.innerHTML = `
+            <div class="container">
+                <div class="card result">
+                    <h1>পরীক্ষা সম্পন্ন!</h1>
+                    <h2>তোমার ফলাফল</h2>
+                    <h1>${result.score} / ${result.total}</h1>
+                    <p>পরীক্ষায় অংশ নেওয়ার জন্য ধন্যবাদ।</p>
+                </div>
+            </div>
+        `;
+
+    } catch (error) {
+        submitted = false;
+        alert(error.message);
+    }
+}
+
+document.getElementById("examForm").addEventListener(
+    "submit",
+    function(event) {
+        event.preventDefault();
+        submitExam(false);
+    }
+);
+</script>
+
+</body>
+</html>
