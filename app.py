@@ -37,6 +37,9 @@ def init_db():
         """)
 
 
+init_db()
+
+
 @app.route("/")
 def home():
     return render_template("home.html")
